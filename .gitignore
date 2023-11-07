@@ -1,0 +1,5 @@
+.venv/
+*.bsp
+*.swp
+config.py
+__pycache__/
