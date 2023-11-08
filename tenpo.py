@@ -143,14 +143,17 @@ for day in range(days):
             while not found:
                 for moment in moments:
                     if moments[hourCount][momentCount] <= now:
-                        # This hour is in the past
+                        # This moment is in the past
                         lastMoment = moment
                     else:
-                        # This hour is in the future
+                        # This moment is in the future
                         # which means the last one is the current one
                         currentMoment = lastMoment
                         hourCount = hourCount + 1 # counting from 1
-                        momentCount = momentCount - 1
+                        if hourCount > 12:
+                            hourCount = hourCount - 12
+                        if momentCount > 0:
+                            momentCount = momentCount - 1
                         found = True
                         break
                     momentCount = momentCount + 1
