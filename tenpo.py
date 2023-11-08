@@ -6,7 +6,14 @@ try:
 except ModuleNotFoundError:
     print("Could not find config.py.")
     config = open("config.py", "w")
-    config.write("from skyfield.api import N, E, S, W\n# Enter your own timezone and coordinates here\n# for timezone names, see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones\n\ntimezone  = 'Australia/Sydney'\nlatitude  = -33.86514 * N\nlongitude = 151.20990 * E\ndaysToCalculate = 3")
+    # Write this stuff to the config file
+    config.write("""from skyfield.api import N, E, S, W
+# Enter your own timezone and coordinates here
+# for timezone names, see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+timezone  = 'Australia/Sydney' 
+latitude  = -33.86514 * N 
+longitude = 151.20990 * E
+daysToCalculate = 3""")
     config.close()
     print("You need to manually edit that file, unless you want my placeholder data.")
     exit()
@@ -47,6 +54,8 @@ t = t.astimezone(tz)
 
 # Split sunrises and sunsets into seperate lists
 sunrises, sunsets = t[::2], t[1::2]
+dayMoments = []
+nightMoments = []
 
 # For each day requested
 for i in range (days):
@@ -58,7 +67,12 @@ for i in range (days):
     # Seconds per hour
     dayHourLength = dayDuration / 12
     nightHourLength = nightDuration / 12
-
+    # Seconds per moment 
+    # TODO: implement these
+    dayMomentLength = dayHourLength / 40
+    nightMomentLength = nightHourLength / 40
+    dayMoments.append([])
+    nightMoments.append([])
     # The start times of each hour: we know the first one is sunrise/set
     dayHourTime = [sunrises[i]]
     nightHourTime = [sunsets[i]]
@@ -67,18 +81,38 @@ for i in range (days):
     # Make sure your math lines up with the actual sunrise and sunset
     if debug:
         print("    Sunrise    Sunset")
-        print(sunrises[i].strftime("    %I:%M:%S %p") + "   " + sunsets[i].strftime("%I:%M:%S %p") )
+        print(
+                sunrises[i].strftime("    %I:%M:%S %p") + "   " + 
+                sunsets[i].strftime("%I:%M:%S %p"))
 
     print("    Day hours     Night hours")
     for hour in range(12):
         if hour < 11: # make sure xHourtime[] only has 12 things in it
             # Make the next hour equal 
             # the current hour + the number of seconds in an hour
-            dayHourTime.append(dayHourTime[hour]+dt.timedelta(seconds = dayHourLength))
-            nightHourTime.append(nightHourTime[hour]+dt.timedelta(seconds = nightHourLength))
+            dayHourTime.append(
+                    dayHourTime[hour] + dt.timedelta(seconds = dayHourLength))
+            nightHourTime.append(
+                    nightHourTime[hour] + dt.timedelta(seconds = nightHourLength))
 
         dayInfo = dayHourTime[hour].strftime("%I:%M:%S %p")
         nightInfo = nightHourTime[hour].strftime("%I:%M:%S %p")
         print(str(hour+1).zfill(2) + "  " + dayInfo + "   " + nightInfo)
+        # Add a list for each hour of the day/night
+        dayMoments[i].append([])
+        nightMoments[i].append([])
+
+        # Add the time of each moment to the list we just made for it's hour
+        for moment in range(40):
+            dayMoments[i][hour].append(
+                    dayHourTime[hour] + 
+                    dt.timedelta(seconds = dayMomentLength*(moment)))
+            nightMoments[i][hour].append(
+                    nightHourTime[hour] + 
+                    dt.timedelta(seconds = nightMomentLength*(moment)))
+            if debug:
+                print(str(moment+1).zfill(2) + "  "  + 
+                      dayMoments[i][hour][moment].strftime("%I:%M:%S") + "      " + 
+                      nightMoments[i][hour][moment].strftime("%I:%M:%S"))
 
 
