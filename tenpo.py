@@ -45,6 +45,8 @@ def toSeconds(list):
 # Figure out local midnight.
 now = dt.datetime.now().astimezone(tz)
 midnightStart = now.replace(hour=0, minute=0, second=0, microsecond=0)
+# after midnight and before sunrise, we actually want the day that started yesterday
+midnightStart = midnightStart - dt.timedelta(days=1)
 # No special arguments, proceed as normal
 if len(args) == 0:
     days = daysToCalculate
@@ -79,18 +81,32 @@ hourLength = [] # seconds per hour
 dayNightDuration = [] # seconds per [day, night]
 momentLength = [] # seconds per [daytime moment, nighttime moment]
 index = 0
-
-for i in range(days):
-    hourTime.append([t[index], "", "", "", "", "", "", "", "", "", "", "",
-                     t[index+1], "", "", "", "", "", "", "", "", "", "", ""])
-    index = index + 2
-
-    # seconds in a day / night
-    dayNightDuration.append( [toSeconds(t[index+1]) - toSeconds(t[index]),
-                       86400 - toSeconds(t[index+1]) + toSeconds(t[index+2])])
-    # Seconds per hour
-    hourLength.append([dayNightDuration[i][0] / 12, dayNightDuration[i][1] / 12])
-
+count = 0
+endEarly = False
+for i in range(days+1):
+    if i == 0:
+        # today sunrise was in the past
+        # this means yesterday's day is irrelevant
+        if t[index+2] < now:
+            index = index + 2
+            continue
+        else: 
+            # the current day started before midnight 
+            # this means we have one day too many
+            endEarly == True
+    if i != range(days) or (i >= range(days) and endEarly == False):
+        hourTime.append([t[index], "", "", "", "", "", "", "", "", "", "", "",
+                        t[index+1], "", "", "", "", "", "", "", "", "", "", ""])
+        # seconds in a day / night
+        dayNightDuration.append( [toSeconds(t[index+1]) - toSeconds(t[index]),
+                        86400 - toSeconds(t[index+1]) + toSeconds(t[index+2])])
+        
+        # Seconds per hour
+        hourLength.append([dayNightDuration[count][0] / 12, dayNightDuration[count][1] / 12])
+        count = count + 1
+        index = index + 2
+    else:
+        print("ono")
 # Seconds per moment 
 momentLength = [hourLength[0][0] / 40, hourLength[0][1] / 40]
 
