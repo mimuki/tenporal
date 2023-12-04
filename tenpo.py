@@ -94,14 +94,18 @@ for i in range(days+1):
             # the current day started before midnight 
             # this means we have one day too many
             endEarly == True
+
+    # i wonder if this is wrong? it seems to be working but i'm sus
     if i != range(days) or (i >= range(days) and endEarly == False):
-        hourTime.append([t[index], "", "", "", "", "", "", "", "", "", "", "",
-                        t[index+1], "", "", "", "", "", "", "", "", "", "", ""])
+
         # seconds in a day / night
         dayNightDuration.append( [toSeconds(t[index+1]) - toSeconds(t[index]),
                         86400 - toSeconds(t[index+1]) + toSeconds(t[index+2])])
-        
-        # Seconds per hour
+
+        # todo: this but way more optimal, and adding all the values at once
+        hourTime.append([t[index], "", "", "", "", "", "", "", "", "", "", "",
+                        t[index+1], "", "", "", "", "", "", "", "", "", "", ""])
+
         hourLength.append([dayNightDuration[count][0] / 12, dayNightDuration[count][1] / 12])
         count = count + 1
         index = index + 2
